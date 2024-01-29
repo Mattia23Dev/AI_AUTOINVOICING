@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const { register, login, googleLogin } = require('./controllers/auth');
-const { getUrlFatture, callback, saveAccessToken } = require('./controllers/fattureInCloud');
+const { getUrlFatture, callback, saveAccessToken, saveToken } = require('./controllers/fattureInCloud');
 require('dotenv').config();
 
 const app = express();
@@ -34,6 +34,7 @@ app.post('/auth/google-login', googleLogin);
 //FATTURE IN CLOUD
 app.get('/auth/authorize', getUrlFatture);
 app.get('/auth/callback', callback);
+app.post('/save-token', saveToken);
 
 app.listen(port, () => {
   console.log(`Il server è in ascolto sulla porta ${port}`);

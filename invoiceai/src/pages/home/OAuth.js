@@ -20,9 +20,7 @@ const OAuth = () => {
         await axios.get(`/auth/callback?code=${code}&userId=${state.user._id}&url=${currentUrl}`)
         .then((response) => {
             console.log(response);
-            toast.success('Autorizzazione andata a buon fine!');
-            navigate('/');
-            setIsLoading(false);
+            saveToken(response.data.tokenObj);
         })
         .catch((error) => {
             console.error('Errore durante il processo di autenticazione:', error);
@@ -34,6 +32,18 @@ const OAuth = () => {
 
     getToken();
   }, []);
+
+  const saveToken = async (tokenObj) => {
+    try {
+        const response = await axios.post("/save-token", { ...tokenObj, userId: state.user._id });
+        console.log(response)
+        toast.success('Autorizzazione andata a buon fine!');
+        navigate('/');
+        setIsLoading(false);
+    } catch (error) {
+        console.error(error);
+    }
+  }
 
   return (
     <div>

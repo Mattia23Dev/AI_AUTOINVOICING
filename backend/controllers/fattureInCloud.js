@@ -49,39 +49,46 @@ exports.getUrlFatture = async (req, res) => {
   };
 
   exports.callback = async (req, res) => {
-    const codeOld = req.query.code;
-    const userId = req.query.userId;
     const url = req.query.url;
   
     try {
       var params = oauth.getParamsFromUrl(url);
       console.log(url);
-      console.log(userId);
       var code = params.authorizationCode;
       var state = params.state;
-      //const tokenObj = await getToken(code);
+
       const tokenObj = await oauth.fetchToken(code);
       const tokenOb = JSON.stringify(tokenObj);
-      const accessToken = JSON.stringify(tokenOb.accessToken);
-      const refreshToken = JSON.stringify(tokenObj.refreshToken);
+
       console.log(tokenOb);
-      /*const user = await User.findById(userId);
   
-      if (!user) {
-        return res.status(404).json({ error: "Utente non trovato." });
-      }
-  
-      user.accessToken = accessToken;
-      user.refreshToken = refreshToken;
-  
-      await user.save();*/
-  
-      console.log(accessToken);
-      console.log(refreshToken);
-  
-      res.status(200).json({ accessToken, refreshToken, tokenObj, tokenOb });
+      res.status(200).json({ tokenObj });
     } catch (error) {
       console.error("Errore durante l'autenticazione:", error);
       res.status(500).json({ error: "Errore durante l'autenticazione.", error });
+    }
+  };
+
+  exports.saveToken = async (req, res) => {
+    try {
+
+      const { userId, access_token, refresh_token, expires_in } = req.body;
+  
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: 'Utente non trovato.' });
+      }
+  
+      user.accessToken = access_token;
+      user.refreshToken = refresh_token;
+      user.tokenExpiration = new Date(Date.now() + expires_in * 1000);
+  
+      await user.save();
+  
+      res.status(200).json({ message: 'Token salvati con successo.' });
+    } catch (error) {
+      console.error('Errore durante il salvataggio dei token:', error);
+      res.status(500).json({ error: 'Errore durante il salvataggio dei token.' });
     }
   };
