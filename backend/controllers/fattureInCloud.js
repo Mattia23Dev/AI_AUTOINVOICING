@@ -79,7 +79,7 @@ exports.getUrlFatture = async (req, res) => {
       console.log(accessToken);
       console.log(refreshToken);
   
-      res.status(200).json({ accessToken, refreshToken });
+      res.status(200).json({ accessToken, refreshToken, tokenObj, tokenOb });
     } catch (error) {
       console.error("Errore durante l'autenticazione:", error);
       res.status(500).json({ error: "Errore durante l'autenticazione.", error });
