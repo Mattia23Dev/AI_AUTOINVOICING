@@ -79,16 +79,69 @@ exports.getUrlFatture = async (req, res) => {
       if (!user) {
         return res.status(404).json({ error: 'Utente non trovato.' });
       }
+      const { companies } = await getCompanyId(access_token);
   
       user.accessToken = access_token;
       user.refreshToken = refresh_token;
       user.tokenExpiration = new Date(Date.now() + expires_in * 1000);
+      user.companies = companies;
   
       await user.save();
   
-      res.status(200).json({ message: 'Token salvati con successo.' });
+      res.status(200).json({ message: 'Token salvati con successo.', user: user });
     } catch (error) {
       console.error('Errore durante il salvataggio dei token:', error);
       res.status(500).json({ error: 'Errore durante il salvataggio dei token.' });
+    }
+  };
+
+  const getCompanyId = async (accessToken) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          accept: 'application/json',
+        },
+      };
+  
+      const response = await axios.get('https://api-v2.fattureincloud.it/user/companies', config);
+      console.log(response.data.data);
+  
+      return response.data.data;
+    } catch (error) {
+      console.error('Errore nella richiesta API per ottenere il company_id:', error);
+      throw error;
+    }
+  };
+
+  exports.getSuppliersByUserId = async (req, res) => {
+    try {
+      const { userId, companyId } = req.params;
+  
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: 'Utente non trovato.' });
+      }
+  
+      const accessToken = user.accessToken;
+  
+      if (!accessToken) {
+        return res.status(400).json({ error: 'Access token mancante per questo utente.' });
+      }
+  
+      const response = await axios.get(`https://api-v2.fattureincloud.it/c/${companyId}/entities/suppliers`, {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+  
+      // Estrai i dati dei fornitori dalla risposta e inviali come risposta
+      const suppliers = response.data;
+      res.status(200).json({ suppliers });
+    } catch (error) {
+      console.error('Errore durante il recupero dei fornitori:', error);
+      res.status(500).json({ error: 'Errore durante il recupero dei fornitori.' });
     }
   };

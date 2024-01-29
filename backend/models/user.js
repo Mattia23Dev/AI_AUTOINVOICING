@@ -31,6 +31,9 @@ const userSchema = new mongoose.Schema({
   },
   tokenExpiration: {
     type: Date,
+  },
+  companies: {
+    type: Array,
   }
 });
 
