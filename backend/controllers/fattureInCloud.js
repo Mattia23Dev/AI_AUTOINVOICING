@@ -52,12 +52,11 @@ exports.getUrlFatture = async (req, res) => {
     const codeOld = req.query.code;
     const userId = req.query.userId;
     const url = req.query.url;
-    console.log(url);
-    console.log(userId);
   
     try {
       var params = oauth.getParamsFromUrl(url);
-      
+      console.log(url);
+      console.log(userId);
       var code = params.authorizationCode;
       var state = params.state;
       //const tokenObj = await getToken(code);
@@ -82,6 +81,6 @@ exports.getUrlFatture = async (req, res) => {
       res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
       console.error("Errore durante l'autenticazione:", error);
-      res.status(500).json({ error: "Errore durante l'autenticazione." });
+      res.status(500).json({ error: "Errore durante l'autenticazione.", error });
     }
   };
