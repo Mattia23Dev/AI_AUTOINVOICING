@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import axios from 'axios'
 import './auth.css'
 import toast from 'react-hot-toast';
-import { GoogleLogin } from 'react-google-login';
+import { GoogleLogin } from '@react-oauth/google';
 import { UserContext } from '../../context/userContext';
 import google from '../../imgs/google.png';
 

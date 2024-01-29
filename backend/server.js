@@ -34,7 +34,6 @@ app.post('/auth/google-login', googleLogin);
 //FATTURE IN CLOUD
 app.get('/auth/authorize', getUrlFatture);
 app.get('/auth/callback', callback);
-app.get('/auth/prova', saveAccessToken);
 
 app.listen(port, () => {
   console.log(`Il server è in ascolto sulla porta ${port}`);

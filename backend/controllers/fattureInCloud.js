@@ -1,65 +1,42 @@
 /* L’identificativo interno della tua applicazione.  8207*/
 var fattureInCloudSdk = require("@fattureincloud/fattureincloud-js-sdk");
+const User = require("../models/user");
 
 var oauth = new fattureInCloudSdk.OAuth2AuthorizationCodeManager(
   "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P", //client id
   "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",  // client secret
-  "http://localhost:8000/oauth"
+  "https://autoinvoicing-ai.netlify.app/oauth"
 );
 
 var scopes = [
     fattureInCloudSdk.Scope.SETTINGS_ALL,
     fattureInCloudSdk.Scope.ISSUED_DOCUMENTS_INVOICES_READ,
-  ];
-
-exports.saveAccessToken = async(req, res) => {
-    try {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
-  
-    let query = req.url.split("?")[1];
-    let params = new URLSearchParams(query);
-  
-    if (params.get("code") == null) {
-      res.writeHead(302, {
-        Location: oauth.getAuthorizationUrl(
-          [fattureInCloudSdk.Scope.ENTITY_SUPPLIERS_READ],
-          "EXAMPLE_STATE"
-        ),
-      });
-      res.end();
-    } else {
-      try {
-        let token = await oauth.fetchToken(params.get("code"));
-  
-        fs.writeFileSync(
-          "./token.json",
-          JSON.stringify(token, null, 4),
-          (err) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-          }
-        );
-        res.write("Token succesfully retrived and stored in token.json");
-      } catch (e) {
-        console.log(e);
-      }
-      res.end();
-    }        
-    } catch (error) {
-        console.error(error);
-    }
-
-  }  
+  ]; 
 
 exports.getUrlFatture = async (req, res) => {
     try {
-        const scopes = [
-            fattureInCloudSdk.Scope.SETTINGS_ALL,
-            fattureInCloudSdk.Scope.ISSUED_DOCUMENTS_INVOICES_READ,
-          ];
+      const scopes = [
+        "entity.clients:a",
+        "entity.suppliers:a",
+        "products:a",
+        "stock:a",
+        "issued_documents.invoices:a",
+        "issued_documents.credit_notes:a",
+        "issued_documents.quotes:a",
+        "issued_documents.proformas:a",
+        "issued_documents.receipts:a",
+        "issued_documents.delivery_notes:a",
+        "issued_documents.orders:a",
+        "issued_documents.work_reports:a",
+        "issued_documents.supplier_orders:a",
+        "received_documents:a",
+        "receipts:a",
+        "calendar:a",
+        "archive:a",
+        "taxes:a",
+        "cashbook:a",
+        "settings:a"
+      ];
           
         const url = oauth.getAuthorizationUrl(scopes, "EXAMPLE_STATE");
         res.status(200).json(url);
@@ -69,22 +46,34 @@ exports.getUrlFatture = async (req, res) => {
     }
   };
 
-exports.callback = async (req, res) => {
-    const params = oauth.getParamsFromUrl(req.originalUrl);
-    const authorizationCode = params.authorizationCode;
+  exports.callback = async (req, res) => {
+    const code = req.query.code;
+    const userId = req.query.userId;
+    console.log(code);
+    console.log(userId);
   
     try {
-      const tokenObj = await oauth.fetchToken(authorizationCode);
+      const tokenObj = await oauth.fetchToken(code);
       const accessToken = tokenObj.accessToken;
       const refreshToken = tokenObj.refreshToken;
-      
-      console.log(accessToken)
-      console.log(refreshToken)
-      
-      res.status(200).json({ message: "Autenticazione completata con successo." });
+    
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: "Utente non trovato." });
+      }
+  
+      user.accessToken = accessToken;
+      user.refreshToken = refreshToken;
+  
+      await user.save();
+  
+      console.log(accessToken);
+      console.log(refreshToken);
+  
+      res.status(200).json({ accessToken, refreshToken });
     } catch (error) {
       console.error("Errore durante l'autenticazione:", error);
       res.status(500).json({ error: "Errore durante l'autenticazione." });
     }
   };
-

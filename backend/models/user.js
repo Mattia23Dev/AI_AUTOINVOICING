@@ -22,6 +22,12 @@ const userSchema = new mongoose.Schema({
   },
   stripe_id: {
     type: String,
+  },
+  accessToken: {
+    type: String,
+  },
+  refreshToken: {
+    type: String,
   }
 });
 

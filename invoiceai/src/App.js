@@ -7,7 +7,8 @@ import Sidebar from './components/Sidebar';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { Toaster } from "react-hot-toast";
-
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import OAuth from './pages/home/OAuth';
 
 function App() {
   const [loginOpen, setLoginOpen] = useState(false);
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <Router>
+      <GoogleOAuthProvider clientId="604280477054-aj050p5dmg77u4joij3gj9stdsuci4pa.apps.googleusercontent.com">
       <Toaster
         position="top-center"
         toastOptions={{
@@ -36,8 +38,10 @@ function App() {
         <Routes>
           <Route exact path="/" element={<Home />} />
           <Route path="/ai-invoice" element={<AiInvoicing />} />
+          <Route path="/oauth" element={<OAuth />} />
         </Routes>
       </div>
+      </GoogleOAuthProvider>
     </Router>
   );
 }
