@@ -73,7 +73,7 @@ exports.getUrlFatture = async (req, res) => {
     try {
 
       const { userId, access_token, refresh_token, expires_in } = req.body;
-  
+      console.log(req.body);
       const user = await User.findById(userId);
   
       if (!user) {

@@ -5,7 +5,7 @@ import { UserContext } from '../../context/userContext';
 import toast from 'react-hot-toast';
 
 const OAuth = () => {
-  const [state] = useContext(UserContext);  
+  const [state, setState] = useContext(UserContext);  
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
