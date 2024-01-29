@@ -48,26 +48,6 @@ exports.getUrlFatture = async (req, res) => {
     }
   };
 
-  async function getToken(authCode) {
-    const data = {
-      grant_type: "authorization_code",
-      client_id: "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P",
-      client_secret: "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",
-      redirect_uri: "http://localhost:3000/oauth",
-      code: authCode,
-    };
-    try {
-      var res = await axios.post("https://api-v2.fattureincloud.it/oauth/token", data);
-    } catch (e) {
-      console.error(e);
-    }
-  
-    if (res.status != 200) {
-      console.log(res.status);
-    }
-    return res.data;
-  }
-
   exports.callback = async (req, res) => {
     const codeOld = req.query.code;
     const userId = req.query.userId;
@@ -85,7 +65,7 @@ exports.getUrlFatture = async (req, res) => {
       const accessToken = tokenObj.accessToken;
       const refreshToken = tokenObj.refreshToken;
     
-      const user = await User.findById(userId);
+      /*const user = await User.findById(userId);
   
       if (!user) {
         return res.status(404).json({ error: "Utente non trovato." });
@@ -94,7 +74,7 @@ exports.getUrlFatture = async (req, res) => {
       user.accessToken = accessToken;
       user.refreshToken = refreshToken;
   
-      await user.save();
+      await user.save();*/
   
       console.log(accessToken);
       console.log(refreshToken);
