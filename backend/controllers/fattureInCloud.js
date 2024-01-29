@@ -61,9 +61,9 @@ exports.getUrlFatture = async (req, res) => {
       var state = params.state;
       //const tokenObj = await getToken(code);
       const tokenObj = await oauth.fetchToken(code);
-      const accessToken = tokenObj.accessToken;
-      const refreshToken = tokenObj.refreshToken;
-      console.log(JSON.stringify(tokenObj));
+      const tokenOb = JSON.stringify(tokenObj);
+      const accessToken = tokenOb.accessToken;
+      const refreshToken = tokenOb.refreshToken;
 
       /*const user = await User.findById(userId);
   
