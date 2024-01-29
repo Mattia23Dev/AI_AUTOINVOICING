@@ -6,7 +6,7 @@ const axios = require("axios");
 var oauth = new fattureInCloudSdk.OAuth2AuthorizationCodeManager(
   "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P", //client id
   "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",  // client secret
-  "http://localhost:3000/oauth" //https://autoinvoicing-ai.netlify.app/oauth
+  "https://autoinvoicing-ai.netlify.app/oauth" //https://autoinvoicing-ai.netlify.app/oauth
 );
 
 var scopes = [
