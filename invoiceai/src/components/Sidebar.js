@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import './sidebar.css';
 import logo from '../imgs/logo.png';
+import { UserContext } from '../context/userContext';
 
 const Sidebar = ({setLoginOpen, setRegOpen}) => {
+  const [state, setState] = useContext(UserContext);
   return (
     <div className='navbar'>
        <div className="navbar-left">
@@ -23,10 +25,18 @@ const Sidebar = ({setLoginOpen, setRegOpen}) => {
           <li><a href="#">Contact</a></li>
         </ul>
       </div>
+      {state && state.token && state.user ? (
+      <div className="navbar-right">
+        <p>{state.user.name}</p>
+        <button onClick={() => {localStorage.removeItem("auth"); setState()}}>Logout</button>
+      </div>
+      ) : (
       <div className="navbar-right">
         <button onClick={() => setLoginOpen(true)}>Accedi</button>
         <button onClick={() => setRegOpen(true)}>Registrati</button>
-      </div>
+      </div>        
+      )}
+
     </div>
   )
 }

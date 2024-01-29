@@ -1,11 +1,12 @@
 /* L’identificativo interno della tua applicazione.  8207*/
 var fattureInCloudSdk = require("@fattureincloud/fattureincloud-js-sdk");
 const User = require("../models/user");
+const axios = require("axios");
 
 var oauth = new fattureInCloudSdk.OAuth2AuthorizationCodeManager(
   "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P", //client id
   "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",  // client secret
-  "https://autoinvoicing-ai.netlify.app/oauth"
+  "http://localhost:3000/oauth" //https://autoinvoicing-ai.netlify.app/oauth
 );
 
 var scopes = [
@@ -14,6 +15,7 @@ var scopes = [
   ]; 
 
 exports.getUrlFatture = async (req, res) => {
+
     try {
       const scopes = [
         "entity.clients:a",
@@ -46,13 +48,39 @@ exports.getUrlFatture = async (req, res) => {
     }
   };
 
+  async function getToken(authCode) {
+    const data = {
+      grant_type: "authorization_code",
+      client_id: "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P",
+      client_secret: "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",
+      redirect_uri: "http://localhost:3000/oauth",
+      code: authCode,
+    };
+    try {
+      var res = await axios.post("https://api-v2.fattureincloud.it/oauth/token", data);
+    } catch (e) {
+      console.error(e);
+    }
+  
+    if (res.status != 200) {
+      console.log(res.status);
+    }
+    return res.data;
+  }
+
   exports.callback = async (req, res) => {
-    const code = req.query.code;
+    const codeOld = req.query.code;
     const userId = req.query.userId;
-    console.log(code);
+    const url = req.query.url;
+    console.log(url);
     console.log(userId);
   
     try {
+      var params = oauth.getParamsFromUrl(url);
+      
+      var code = params.authorizationCode;
+      var state = params.state;
+      //const tokenObj = await getToken(code);
       const tokenObj = await oauth.fetchToken(code);
       const accessToken = tokenObj.accessToken;
       const refreshToken = tokenObj.refreshToken;

@@ -12,12 +12,12 @@ const OAuth = () => {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
+    const currentUrl = window.location.href;
     const code = searchParams.get('code');
-    const userId = state.user._id;
     console.log(code);
 
     axios
-      .get(`/auth/callback?code=${code}&userId=${userId}`)
+      .get(`/auth/callback?code=${code}&userId=${state.user._id}&url=${currentUrl}`)
       .then((response) => {
         console.log(response);
         toast.success('Autorizzazione andata a buon fine!');
@@ -28,9 +28,9 @@ const OAuth = () => {
         console.error('Errore durante il processo di autenticazione:', error);
       })
       .finally(() => {
-        
+        console.log('ok')
       });
-  }, [location, navigate]);
+  }, []);
 
   return (
     <div>
