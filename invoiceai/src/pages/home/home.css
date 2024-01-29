@@ -1,0 +1,15 @@
+.home-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+}
+.home-container > img:first-of-type{
+    width: 16%;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+.home-container > img:nth-of-type(2){
+    width: 60%;
+}
