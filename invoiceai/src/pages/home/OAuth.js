@@ -36,8 +36,12 @@ const OAuth = () => {
     try {
         console.log(tokenObj);
         const response = await axios.post("/save-token", tokenObj);
-        setState({ ...state, user: response.data.user });
-        localStorage.setItem("auth", JSON.stringify({ ...state, user: response.data.user }));
+        setState({ token: auth.token, user: response.data.user });
+        const newState = {
+            token: auth.token,
+            user: response.data.user,
+        };
+        localStorage.setItem("auth", JSON.stringify(newState));
         console.log(response)
         toast.success('Autorizzazione andata a buon fine!');
         navigate('/');

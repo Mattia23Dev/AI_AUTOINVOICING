@@ -6,7 +6,7 @@ const axios = require("axios");
 var oauth = new fattureInCloudSdk.OAuth2AuthorizationCodeManager(
   "wPtnjKSFF0NMhCmbHmCiy4VXKfecrr9P", //client id
   "6pmCvkztxUJXs1Kp2M9PxF1V8MdRmugKg6brrnZ9rsmFDSTVQtub82KYqjNiDplK",  // client secret
-  "https://autoinvoicing-ai.netlify.app/oauth" //https://autoinvoicing-ai.netlify.app/oauth
+  "http://localhost:3000/oauth" //https://autoinvoicing-ai.netlify.app/oauth
 );
 
 var scopes = [
@@ -23,6 +23,7 @@ exports.getUrlFatture = async (req, res) => {
         "products:a",
         "stock:a",
         "issued_documents.invoices:a",
+        "issued_documents.self_invoices:a",
         "issued_documents.credit_notes:a",
         "issued_documents.quotes:a",
         "issued_documents.proformas:a",
@@ -137,7 +138,6 @@ exports.getUrlFatture = async (req, res) => {
         },
       });
   
-      // Estrai i dati dei fornitori dalla risposta e inviali come risposta
       const suppliers = response.data;
       res.status(200).json({ suppliers });
     } catch (error) {
@@ -145,3 +145,138 @@ exports.getUrlFatture = async (req, res) => {
       res.status(500).json({ error: 'Errore durante il recupero dei fornitori.' });
     }
   };
+
+  let invoiceData = {
+    type: "self_own_invoice",
+    entity: {
+      id: 1,
+      name: "Mario Rossi",
+      vat_number: "47803200154",
+      tax_code: "RSSMRA91M20B967Q",
+      address_street: "Via Italia, 66",
+      address_postal_code: "20900",
+      address_city: "Milano",
+      address_province: "MI",
+      country: "Italia",
+      ei_code: "XXXXXXX",
+    },
+    date: "2024-01-20",
+    number: 1,
+    numeration: "/fatt",
+    subject: "internal subject",
+    visible_subject: "visible subject",
+    currency: {
+      id: "EUR"
+    },
+    language: {
+      code: "it",
+      name: "Italiano"
+    },
+    //e_invoice: true,
+    items_list: [
+      {
+        product_id: 4,
+        code: "tv3",
+        name: "tavolo in legno",
+        net_price: 100,
+        category: "cucina",
+        discount: 0,
+        qty: 1,
+        vat: {
+          id: 0
+        }
+      }
+    ],
+    payments_list: [
+      {
+        amount: 122,
+        due_date: "2024-01-23"
+      }
+    ],
+    template: {
+      id: 150
+    },
+    ei_raw: {
+      FatturaElettronicaBody: {
+        DatiGenerali: {
+          DatiGeneraliDocumento: [
+            {
+              TipoDocumento: "TD17"
+            }
+          ]
+        },
+        DatiFattureCollegate: {
+          IdDocumento: 1,
+          Data: "2024-01-02",
+        }
+      }
+    }
+  };
+
+  const accessToken = "a/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZWYiOiJaY2JxV3JkaWhSdWVDSGtXZHlRU3ZYQjJhd0JFcW53OCIsImV4cCI6MTcwNjk4MjgwOX0.A38DNtqzBZwB1du7YWuW2pszD0B5QGIXpg84mAu5EUo";
+  const company_id = 1267097;
+
+  async function getLatestInvoiceNumber() {
+    try {
+
+      let defaultClient = fattureInCloudSdk.ApiClient.instance;
+      let OAuth2AuthenticationCodeFlow = defaultClient.authentications['OAuth2AuthenticationCodeFlow'];
+      OAuth2AuthenticationCodeFlow.accessToken = accessToken;
+  
+      let apiInstance = new fattureInCloudSdk.IssuedDocumentsApi();
+  
+      let type = "self_own_invoice";
+      let opts = {
+        'sort': '-number',
+        'per_page': 1
+      };
+  
+      const response = await apiInstance.listIssuedDocuments(company_id, type, opts);
+  
+      const latestInvoice = response.data[0];
+      const invoiceNumber = latestInvoice.number;
+      return invoiceNumber;
+    } catch (error) {
+      console.error('Errore nella richiesta:', error.message);
+      return null;
+    }
+  }
+
+  async function createInvoice() {
+    const latestInvoiceNumber = await getLatestInvoiceNumber();
+    console.log(latestInvoiceNumber)
+
+    if (latestInvoiceNumber !== null) {
+      console.log('non è nullo')
+      invoiceData.number = latestInvoiceNumber + 1;
+    } else {
+      console.error('Impossibile ottenere il numero dell\'ultima autofattura.');
+      return;
+    }
+
+    let createIssuedDocumentRequest = {
+      data: invoiceData
+    };
+
+    try {
+      const apiUrl = `https://api-v2.fattureincloud.it/c/${company_id}/issued_documents`;
+  
+      const response = await axios.post(apiUrl, JSON.stringify(createIssuedDocumentRequest), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+  
+      if (response.status === 200) {
+        console.log('Fattura creata con successo!');
+        console.log('ID Fattura:', response.data.data.id);
+      } else {
+        console.error('Errore nella creazione della fattura:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('Errore durante la chiamata all\'API:', error);
+    }
+  }
+
+  createInvoice();
